@@ -3,217 +3,221 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XVideo Downloader</title>
+  <title>Xvideo Downloader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #f12711, #f5af19);
+      font-family: 'Inter', sans-serif;
+      background-color: #0c0c0c;
       color: white;
       margin: 0;
       padding: 0;
+    }
+    header {
+      background-color: #121212;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 24px;
+      color: #f00;
+      font-weight: 700;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+    .input-container {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    .input-container input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      margin-right: 10px;
+      background-color: #2c2c2c;
+      color: #fff;
+    }
+    .input-container button {
+      padding: 12px 16px;
+      background-color: #ff2b2b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .input-container button:hover {
+      background-color: #ff4b4b;
+    }
+    .results {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #252525;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      position: relative;
+      border: 2px solid #f00;
+      animation: glow 1.5s infinite alternate;
+    }
+    .result-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #333;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .result-item h3 {
+      font-size: 18px;
+      margin: 0;
+      color: #fff;
+    }
+    .result-item p {
+      font-size: 14px;
+      color: #bbb;
+    }
+    .result-item img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .loading {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    .container {
-      background: rgba(0, 0, 0, 0.8);
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      max-width: 500px;
-      width: 90%;
-    }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
-    form {
-      margin-top: 20px;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    button {
-      padding: 10px 20px;
-      background: linear-gradient(90deg, #ff512f, #f09819);
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: linear-gradient(90deg, #f09819, #ff512f);
-    }
-    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: none;
-      margin-top: 10px;
-      font-size: 16px;
-      color: #f5af19;
     }
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid #fff;
+    .loading div {
+      width: 60px;
+      height: 60px;
+      border: 10px solid #fff;
+      border-top: 10px solid #ff2b2b;
       border-radius: 50%;
-      width: 24px;
-      height: 24px;
       animation: spin 1s linear infinite;
-      margin: 0 auto;
+      position: relative;
+    }
+    .loading div::after {
+      content: 'X';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: #fff;
     }
     @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    .results {
-      margin-top: 20px;
-      color: white;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .video-card {
-      margin-top: 20px;
-      text-align: left;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 15px;
-    }
-    .video-card img {
-      max-width: 100%;
-      border-radius: 4px;
-    }
-    .video-details h3 {
-      font-size: 20px;
-      margin: 10px 0 5px;
-    }
-    .video-details a {
-      text-decoration: none;
-      color: white;
-      background: #28a745;
-      padding: 8px 12px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-top: 10px;
-    }
-    .video-details a:hover {
-      background: #218838;
-    }
-    #age-verification {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    #age-verification button {
-      margin-top: 10px;
-      padding: 10px 15px;
-      font-size: 14px;
-    }
-    #main-content {
-      display: none;
+    @keyframes glow {
+      0% { border-color: #ff2b2b; }
+      50% { border-color: #f5f5f5; }
+      100% { border-color: #ff2b2b; }
     }
   </style>
 </head>
 <body>
-  <div class="container" id="age-verification">
-    <h1>Are You 18 or Older?</h1>
-    <button onclick="verifyAge()">Yes, I'm 18+</button>
-    <button onclick="denyAccess()">No, Take Me Back</button>
+
+  <header>
+    <h1>Xvideo Downloader</h1>
+  </header>
+
+  <div class="container">
+    <div class="input-container">
+      <input type="text" id="videoSearch" placeholder="Enter video name or URL">
+      <button id="searchButton">Search</button>
+    </div>
+
+    <div class="results" id="resultsContainer">
+      <!-- Search results will be shown here -->
+    </div>
   </div>
 
-  <div class="container" id="main-content">
-    <h1>XVideo Downloader</h1>
-    <form id="download-form">
-      <input type="text" id="video-url" placeholder="Enter XVideo URL" required>
-      <button type="submit">Download</button>
-    </form>
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Loading...</p>
-    </div>
-    <div class="results" id="results"></div>
+  <div class="loading" id="loadingSpinner">
+    <div></div>
   </div>
 
   <script>
-    const API_URL = "https://api.davidcyriltech.my.id/search/xvideo?text=";
+    document.getElementById('searchButton').addEventListener('click', function () {
+      const searchTerm = document.getElementById('videoSearch').value.trim();
+      if (searchTerm === '') return;
+      
+      // Show loading spinner
+      document.getElementById('loadingSpinner').style.display = 'flex';
 
-    // Age Verification
-    function verifyAge() {
-      document.getElementById("age-verification").style.display = "none";
-      document.getElementById("main-content").style.display = "block";
-    }
+      // Fetch search results from the API
+      fetch(`https://api.davidcyriltech.my.id/search/xvideo?text=${searchTerm}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide loading spinner
+          document.getElementById('loadingSpinner').style.display = 'none';
 
-    function denyAccess() {
-      alert("You must be 18+ to access this page.");
-      window.location.href = "https://www.google.com";
-    }
+          // Display results
+          const resultsContainer = document.getElementById('resultsContainer');
+          resultsContainer.innerHTML = '';
 
-    // Handle form submission
-    document.getElementById("download-form").addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const videoUrl = document.getElementById("video-url").value.trim();
-      const loading = document.getElementById("loading");
-      const results = document.getElementById("results");
-
-      results.innerHTML = "";
-      loading.style.display = "block";
-
-      try {
-        // Fetch video details from the API
-        const response = await fetch(`${API_URL}${encodeURIComponent(videoUrl)}`);
-        const data = await response.json();
-
-        if (!data.success || !data.result.length) {
-          throw new Error("Video not found or API error.");
-        }
-
-        // Render video details
-        data.result.forEach(video => {
-          const videoCard = document.createElement("div");
-          videoCard.className = "video-card";
-
-          const thumbnail = document.createElement("img");
-          thumbnail.src = video.thumbnail;
-
-          const details = document.createElement("div");
-          details.className = "video-details";
-
-          const title = document.createElement("h3");
-          title.textContent = video.title;
-
-          const downloadLink = document.createElement("a");
-          downloadLink.href = video.url;
-          downloadLink.target = "_blank";
-          downloadLink.textContent = "View Video";
-
-          details.appendChild(title);
-          details.appendChild(downloadLink);
-
-          videoCard.appendChild(thumbnail);
-          videoCard.appendChild(details);
-
-          results.appendChild(videoCard);
+          if (data.success && data.result.length > 0) {
+            data.result.forEach(item => {
+              const resultItem = document.createElement('div');
+              resultItem.classList.add('result-item');
+              
+              resultItem.innerHTML = `
+                <img src="${item.thumbnail}" alt="${item.title}">
+                <h3>${item.title}</h3>
+                <p>Duration: ${item.duration} | Quality: ${item.quality}</p>
+                <a href="${item.url}" target="_blank" style="color: #ff2b2b;">View Video</a>
+                <button onclick="downloadVideo('${item.url}')">Download Video</button>
+              `;
+              resultsContainer.appendChild(resultItem);
+            });
+          } else {
+            resultsContainer.innerHTML = '<p>No results found.</p>';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching search results:', error);
+          document.getElementById('loadingSpinner').style.display = 'none';
         });
-      } catch (error) {
-        results.innerHTML = `<p style="color: red;">${error.message}</p>`;
-      } finally {
-        loading.style.display = "none";
-      }
     });
+
+    function downloadVideo(url) {
+      // Show loading spinner again
+      document.getElementById('loadingSpinner').style.display = 'flex';
+      
+      // Fetch the download URL
+      fetch(`https://api.davidcyriltech.my.id/xvideo?url=${url}`)
+        .then(response => response.json())
+        .then(data => {
+          // Hide loading spinner
+          document.getElementById('loadingSpinner').style.display = 'none';
+
+          if (data.success) {
+            window.location.href = data.download_url;
+          } else {
+            alert('Failed to fetch download link.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching download link:', error);
+          document.getElementById('loadingSpinner').style.display = 'none';
+        });
+    }
   </script>
+
 </body>
-  </html>
-  
+</html>
