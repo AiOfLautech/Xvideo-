@@ -15,6 +15,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      overflow: hidden;
     }
     .container {
       background: rgba(0, 0, 0, 0.8);
@@ -79,6 +80,8 @@
     .results {
       margin-top: 20px;
       color: white;
+      max-height: 400px;
+      overflow-y: auto;
     }
     .video-card {
       margin-top: 20px;
@@ -144,7 +147,7 @@
   </div>
 
   <script>
-    const API_URL = "https://api.davidcyriltech.my.id/xvideo";
+    const API_URL = "https://api.davidcyriltech.my.id/search/xvideo?text=";
 
     // Age Verification
     function verifyAge() {
@@ -170,38 +173,40 @@
 
       try {
         // Fetch video details from the API
-        const response = await fetch(`${API_URL}?url=${encodeURIComponent(videoUrl)}`);
+        const response = await fetch(`${API_URL}${encodeURIComponent(videoUrl)}`);
         const data = await response.json();
 
-        if (!data.success) {
+        if (!data.success || !data.result.length) {
           throw new Error("Video not found or API error.");
         }
 
         // Render video details
-        const videoCard = document.createElement("div");
-        videoCard.className = "video-card";
+        data.result.forEach(video => {
+          const videoCard = document.createElement("div");
+          videoCard.className = "video-card";
 
-        const thumbnail = document.createElement("img");
-        thumbnail.src = data.thumbnail;
+          const thumbnail = document.createElement("img");
+          thumbnail.src = video.thumbnail;
 
-        const details = document.createElement("div");
-        details.className = "video-details";
+          const details = document.createElement("div");
+          details.className = "video-details";
 
-        const title = document.createElement("h3");
-        title.textContent = data.title;
+          const title = document.createElement("h3");
+          title.textContent = video.title;
 
-        const downloadLink = document.createElement("a");
-        downloadLink.href = data.download_url;
-        downloadLink.target = "_blank";
-        downloadLink.textContent = "Download Video";
+          const downloadLink = document.createElement("a");
+          downloadLink.href = video.url;
+          downloadLink.target = "_blank";
+          downloadLink.textContent = "View Video";
 
-        details.appendChild(title);
-        details.appendChild(downloadLink);
+          details.appendChild(title);
+          details.appendChild(downloadLink);
 
-        videoCard.appendChild(thumbnail);
-        videoCard.appendChild(details);
+          videoCard.appendChild(thumbnail);
+          videoCard.appendChild(details);
 
-        results.appendChild(videoCard);
+          results.appendChild(videoCard);
+        });
       } catch (error) {
         results.innerHTML = `<p style="color: red;">${error.message}</p>`;
       } finally {
@@ -211,3 +216,4 @@
   </script>
 </body>
   </html>
+  
