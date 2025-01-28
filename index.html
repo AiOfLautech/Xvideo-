@@ -58,7 +58,7 @@
       background-color: #ff4b4b;
     }
     .results {
-      max-height: 800px;
+      max-height: 1000px;
       overflow-y: auto;
       margin-top: 20px;
       padding: 10px;
@@ -119,6 +119,8 @@
       transform: translate(-50%, -50%);
       font-size: 24px;
       color: #fff;
+      font-weight: 700;
+      font-family: 'Arial', sans-serif; /* Change the font here */
     }
     @keyframes spin {
       0% { transform: rotate(0deg); }
@@ -129,15 +131,63 @@
       50% { border-color: #f5f5f5; }
       100% { border-color: #ff2b2b; }
     }
+    .age-verification {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+      background-color: #2c2c2c;
+      border-radius: 8px;
+      max-width: 400px;
+      margin: 50px auto;
+    }
+    .age-verification h2 {
+      color: #f00;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    .age-verification button {
+      padding: 12px 16px;
+      background-color: #ff2b2b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .age-verification button:hover {
+      background-color: #ff4b4b;
+    }
+    .download-btn {
+      padding: 10px 20px;
+      background-color: #ff2b2b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .download-btn:hover {
+      background-color: #ff4b4b;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Xvideo Downloader</h1>
-  </header>
+  <!-- Age Verification Page -->
+  <div class="age-verification" id="ageVerificationPage">
+    <h2>Are you over 18 years old?</h2>
+    <button id="ageVerifyBtn">Yes, I'm over 18</button>
+  </div>
 
-  <div class="container">
+  <div class="container" id="mainContent" style="display:none;">
+    <header>
+      <h1>Xvideo Downloader</h1>
+    </header>
+
     <div class="input-container">
       <input type="text" id="videoSearch" placeholder="Enter video name or URL">
       <button id="searchButton">Search</button>
@@ -153,6 +203,12 @@
   </div>
 
   <script>
+    document.getElementById('ageVerifyBtn').addEventListener('click', function () {
+      // Hide age verification page and show the main content
+      document.getElementById('ageVerificationPage').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+    });
+
     document.getElementById('searchButton').addEventListener('click', function () {
       const searchTerm = document.getElementById('videoSearch').value.trim();
       if (searchTerm === '') return;
@@ -181,7 +237,7 @@
                 <h3>${item.title}</h3>
                 <p>Duration: ${item.duration} | Quality: ${item.quality}</p>
                 <a href="${item.url}" target="_blank" style="color: #ff2b2b;">View Video</a>
-                <button onclick="downloadVideo('${item.url}')">Download Video</button>
+                <button class="download-btn" onclick="downloadVideo('${item.url}')">Download Video</button>
               `;
               resultsContainer.appendChild(resultItem);
             });
