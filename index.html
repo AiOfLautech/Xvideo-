@@ -246,7 +246,7 @@
     });
 
     function downloadVideo(url) {
-      fetch(`https://api.davidcyriltech.my.id/xvideo?url=${url}`)
+      fetch(`https://apis.davidcyriltech.my.id/xvideo?url=${url}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
