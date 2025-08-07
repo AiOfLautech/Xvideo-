@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - XVideo Downloader</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #e53935;
+      --dark: #212121;
+      --light: #f5f5f5;
+      --gray: #757575;
+      --dark-gray: #424242;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #fff;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    section {
+      padding: 60px 0;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      position: relative;
+      color: var(--dark);
+    }
+
+    .section-title:after {
+      content: '';
+      position: absolute;
+      width: 80px;
+      height: 4px;
+      background: var(--primary);
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+
+    .section-subtitle {
+      font-size: 1.2rem;
+      color: var(--gray);
+      max-width: 700px;
+      margin: 0 auto 50px;
+    }
+
+    /* Header Styles */
+    header {
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px 0;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .logo i {
+      font-size: 28px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+
+    .nav-links a {
+      font-weight: 500;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .nav-links a:after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      bottom: -5px;
+      left: 0;
+      transition: all 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .nav-links a:hover:after {
+      width: 100%;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* Privacy Policy Content */
+    .policy-content {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding: 40px;
+      margin-bottom: 50px;
+    }
+
+    .policy-section {
+      margin-bottom: 30px;
+    }
+
+    .policy-section h2 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+
+    .policy-section h3 {
+      font-size: 20px;
+      margin: 20px 0 10px;
+      color: var(--dark);
+    }
+
+    .policy-section p {
+      margin-bottom: 15px;
+      color: var(--dark-gray);
+    }
+
+    .policy-section ul {
+      padding-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    .policy-section li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .policy-section li:before {
+      content: '•';
+      color: var(--primary);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark);
+      color: white;
+      padding: 40px 0 20px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .footer-col h3 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    .footer-col h3:after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 3px;
+      background: var(--primary);
+      bottom: 0;
+      left: 0;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      color: #bbb;
+      transition: all 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: white;
+      padding-left: 5px;
+    }
+
+    .copyright {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .policy-content {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <a href="landing.html" class="logo">
+        <i class="fas fa-film"></i>
+        <span>XVideo Downloader</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="landing.html">Home</a></li>
+        <li><a href="index.html">Download</a></li>
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+      <div class="header-actions">
+        <a href="index.html" class="btn" style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 5px;">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Privacy Policy -->
+  <section>
+    <div class="container">
+      <h1 class="section-title" style="font-size: 2.8rem; margin-bottom: 20px;">Privacy Policy</h1>
+      <p class="section-subtitle" style="max-width: 800px;">Last updated: September 7, 2023</p>
+      
+      <div class="policy-content">
+        <div class="policy-section">
+          <h2>1. Introduction</h2>
+          <p>Welcome to XVideo Downloader ("we", "us", or "our"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website.</p>
+          <p>By using our service, you agree to the collection and use of information in accordance with this policy. If you do not agree with the terms of this policy, please do not access the website.</p>
+        </div>
+        
+        <div class="policy-section">
+          <h2>2. Information We Collect</h2>
+          <h3>Personal Data</h3>
+          <p>While using our service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you. Personally identifiable information may include, but is not limited to:</p>
+          <ul>
+            <li>Email address</li>
+            <li>First name and last name</li>
+            <li>Phone number</li>
+            <li>Cookies and Usage Data</li>
+          </ul>
+          
+          <h3>Usage Data</h3>
+          <p>We may also collect information that your browser sends whenever you visit our service ("Usage Data"). This Usage Data may include information such as:</p>
+          <ul>
+            <li>Your computer's Internet Protocol address (IP address)</li>
+            <li>Browser type and version</li>
+            <li>The pages of our service that you visit</li>
+            <li>The time and date of your visit</li>
+            <li>Time spent on those pages</li>
+            <li>Other diagnostic data</li>
+          </ul>
+        </div>
+        
+        <div class="policy-section">
+          <h2>3. How We Use Your Information</h2>
+          <p>We use the collected data for various purposes:</p>
+          <ul>
+            <li>To provide and maintain our service</li>
+            <li>To notify you about changes to our service</li>
+            <li>To allow you to participate in interactive features of our service when you choose to do so</li>
+            <li>To provide customer support</li>
+            <li>To monitor the usage of our service</li>
+            <li>To detect, prevent and address technical issues</li>
+          </ul>
+        </div>
+        
+        <div class="policy-section">
+          <h2>4. Data Storage and Security</h2>
+          <p>We value your trust in providing us your personal information, thus we are striving to use commercially acceptable means of protecting it. However, please be aware that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and we cannot guarantee its absolute security.</p>
+          <p>Your information is stored on secure servers behind firewalls. We implement a variety of security measures to maintain the safety of your personal information when you enter, submit, or access your personal information.</p>
+        </div>
+        
+        <div class="policy-section">
+          <h2>5. Cookies and Tracking Technologies</h2>
+          <p>We use cookies and similar tracking technologies to track the activity on our service and hold certain information.</p>
+          <p>Cookies are files with a small amount of data which may include an anonymous unique identifier. Cookies are sent to your browser from a website and stored on your device.</p>
+          <p>Examples of Cookies we use:</p>
+          <ul>
+            <li><strong>Session Cookies:</strong> We use Session Cookies to operate our service.</li>
+            <li><strong>Preference Cookies:</strong> We use Preference Cookies to remember your preferences and various settings.</li>
+            <li><strong>Security Cookies:</strong> We use Security Cookies for security purposes.</li>
+          </ul>
+        </div>
+        
+        <div class="policy-section">
+          <h2>6. Third-Party Service Providers</h2>
+          <p>We may employ third-party companies and individuals to facilitate our service ("Service Providers"), provide the service on our behalf, perform service-related services, or assist us in analyzing how our service is used.</p>
+          <p>These third parties have access to your personal information only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.</p>
+        </div>
+        
+        <div class="policy-section">
+          <h2>7. Children's Privacy</h2>
+          <p>Our service does not address anyone under the age of 18. We do not knowingly collect personally identifiable information from anyone under the age of 18. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us. If we become aware that we have collected personal information from children without verification of parental consent, we take steps to remove that information from our servers.</p>
+        </div>
+        
+        <div class="policy-section">
+          <h2>8. Changes to This Privacy Policy</h2>
+          <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
+          <p>We will let you know via email and/or a prominent notice on our service, prior to the change becoming effective and update the "Last updated" date at the top of this Privacy Policy.</p>
+          <p>You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.</p>
+        </div>
+        
+        <div class="policy-section">
+          <h2>9. Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy, please contact us:</p>
+          <ul>
+            <li>By email: privacy@xvideodownloader.com</li>
+            <li>By visiting this page on our website: <a href="contact.html" style="color: var(--primary);">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <a href="landing.html" class="logo" style="font-size: 24px; margin-bottom: 20px; display: block;">
+            <i class="fas fa-film"></i> XVideo Downloader
+          </a>
+          <p style="color: #bbb; margin-bottom: 20px;">The ultimate solution for downloading and streaming XVideo content with ease and speed.</p>
+        </div>
+        
+        <div class="footer-col">
+          <h3>Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="landing.html">Home</a></li>
+            <li><a href="index.html">Download</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h3>Legal</h3>
+          <ul class="footer-links">
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+            <li><a href="#">DMCA Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="copyright">
+        &copy; 2023 XVideo Downloader. All rights reserved.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
