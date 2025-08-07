@@ -1,0 +1,9 @@
+static_sites:
+  - name: your-site-name
+    type: static
+    build_command: ""
+    static_path: /
+    routes:
+      - type: rewrite
+        source: /
+        destination: /landing.html
