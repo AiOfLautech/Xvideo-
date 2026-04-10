@@ -1680,85 +1680,946 @@
         // Update active category
         document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
-        
-        // Update current category
-        currentCategory = item.getAttribute('data-category');
-        
-        // Load videos for selected category
-        loadVideos(currentCategory, 1);
-      });
-    });
-    
-    // Mobile category selection
-    mobileCategory.addEventListener('change', (e) => {
-      currentCategory = e.target.value;
-      
-      // Update desktop category selection
-      document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-      document.querySelector(`.category-item[data-category="${currentCategory}"]`).classList.add('active');
-      
-      // Load videos
-      loadVideos(currentCategory, 1);
-    });
-    
-    // Pagination
-    prevPageBtn.addEventListener('click', () => {
-      if (currentPage > 1) {
-        loadVideos(currentCategory, currentPage - 1);
-      }
-    });
-    
-    nextPageBtn.addEventListener('click', () => {
-      const totalPages = Math.ceil(allVideos.length / videosPerPage);
-      if (currentPage < totalPages) {
-        loadVideos(currentCategory, currentPage + 1);
-      }
-    });
-    
-    document.querySelectorAll('.page-btn[data-page]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const page = parseInt(btn.getAttribute('data-page'));
-        loadVideos(currentCategory, page);
-      });
-    });
-    
-    // Search functionality
-    searchBtn.addEventListener('click', () => {
-      const query = searchInput.value.trim();
-      if (query) {
-        // Reset category selection
-        document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-        document.querySelector('.category-item[data-category="all"]').classList.add('active');
-        currentCategory = 'all';
-        
-        // Load search results
-        allVideos = []; // Clear existing videos
-        loadVideos(query, 1);
-        
-        showToast('Search', `Showing results for "${query}"`, 'info');
-      }
-    });
-    
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        searchBtn.click();
-      }
-    });
-    
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', () => {
-      // Check for saved theme preference
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        currentTheme = 'dark';
-        themeToggle.querySelector('i').classList.remove('fa-moon');
-        themeToggle.querySelector('i').classList.add('fa-sun');
-      }
-      
-      // Initialize particles (will be reinitialized after age verification)
-      initParticles();
-    });
-  </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XVideo Downloader - Stream & Download Videos Online</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --pr:#e53935;--pr-d:#c62828;--acc:linear-gradient(135deg,#e53935,#ff7043);
+      --bg:#f5f5f5;--card:#fff;--text:#333;--txt2:#666;--bdr:#e0e0e0;
+      --shd:0 4px 12px rgba(0,0,0,.1);--hdr:#fff;--sdb:#fff;--mdl:#fff;
+      --tst:#323232;--tst-t:#fff;--srch:#f0f0f0;--sw:260px;--hh:62px;
+    }
+    .dm{
+      --bg:#121212;--card:#1e1e1e;--text:#f0f0f0;--txt2:#aaa;--bdr:#333;
+      --shd:0 4px 12px rgba(0,0,0,.3);--hdr:#1a1a1a;--sdb:#1a1a1a;--mdl:#252525;
+      --tst:#e0e0e0;--tst-t:#333;--srch:#2a2a2a;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;transition:background-color .3s,color .3s}
+    body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+    /* ── HEADER ── */
+    header{background:var(--hdr);box-shadow:var(--shd);padding:0 18px;position:sticky;top:0;z-index:300;height:var(--hh);border-bottom:2px solid var(--pr);display:flex;align-items:center}
+    .hc{width:100%;display:flex;align-items:center;gap:12px}
+    .logo{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;text-decoration:none;white-space:nowrap}
+    .logo i,.logo span{background:var(--acc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .logo i{font-size:24px}
+    .sbox-wrap{flex:1;max-width:560px;margin:0 6px}
+    .sbox{display:flex;align-items:center;background:var(--srch);border-radius:30px;padding:5px 14px;border:2px solid transparent;transition:border-color .3s}
+    .sbox:focus-within{border-color:var(--pr)}
+    .sbox input{background:transparent;border:none;outline:none;width:100%;padding:5px 8px;font-size:14px;color:var(--text)}
+    .sbox button{background:none;border:none;color:var(--pr);cursor:pointer;font-size:16px;transition:transform .2s}
+    .sbox button:hover{transform:scale(1.15)}
+    .hdr-acts{display:flex;align-items:center;gap:8px;margin-left:auto}
+    .hic{background:none;border:1px solid var(--bdr);color:var(--text);cursor:pointer;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .25s;flex-shrink:0}
+    .hic:hover{background:var(--pr);border-color:var(--pr);color:#fff}
+    .ham{display:none}
+
+    /* ── SIDEBAR OVERLAY ── */
+    .sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:250;backdrop-filter:blur(3px)}
+    .sov.open{display:block}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:var(--sw);min-width:var(--sw);background:var(--sdb);box-shadow:2px 0 10px rgba(0,0,0,.07);position:sticky;top:var(--hh);height:calc(100vh - var(--hh));overflow-y:auto;padding:16px 0 30px;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;z-index:260;flex-shrink:0;display:flex;flex-direction:column}
+    .sidebar::-webkit-scrollbar{width:4px}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:10px}
+    @media(max-width:900px){
+      .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:260;padding-top:calc(var(--hh) + 10px);box-shadow:4px 0 20px rgba(0,0,0,.18)}
+      .sidebar.open{transform:translateX(0)}
+      .ham{display:flex}
+    }
+    .sb-brand{display:none;padding:0 18px 14px;border-bottom:1px solid var(--bdr);margin-bottom:10px}
+    @media(max-width:900px){.sb-brand{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:800}}
+    .sb-brand i,.sb-brand span{background:var(--acc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sb-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;color:var(--txt2);padding:0 18px;margin-bottom:6px}
+    .sb-div{height:1px;background:var(--bdr);margin:14px 18px}
+    .snav{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+    .ni{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;cursor:pointer;transition:all .2s;color:var(--text);font-size:13.5px;font-weight:500;text-decoration:none;position:relative;user-select:none}
+    .ni:hover{background:rgba(229,57,53,.08);color:var(--pr)}
+    .ni.active{background:linear-gradient(135deg,rgba(229,57,53,.14),rgba(255,112,67,.08));color:var(--pr);font-weight:700}
+    .ni.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:var(--acc);border-radius:0 3px 3px 0}
+    .nic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(229,57,53,.08);color:var(--pr);flex-shrink:0;transition:all .2s}
+    .ni.active .nic{background:var(--acc);color:#fff}
+    .ni:hover .nic{background:rgba(229,57,53,.14)}
+    .nlb{flex:1}
+    .nbg{background:var(--pr);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px}
+    .sb-foot{padding:14px 18px;margin-top:auto}
+    .sb-foot p{font-size:11px;color:var(--txt2);line-height:1.65}
+
+    /* Sidebar Smartlink Ad */
+    .sb-ad-box{margin:10px 10px 0;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#1a0000,#2d0000);border:1px solid rgba(229,57,53,.25);position:relative}
+    .sb-ad-box::before{content:'AD';position:absolute;top:7px;right:8px;font-size:9px;font-weight:800;color:rgba(255,255,255,.3);letter-spacing:1px}
+    .sb-ad-inner{padding:14px 14px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .sb-ad-icon{width:40px;height:40px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+    .sb-ad-title{font-size:12px;font-weight:700;color:#f0f0f0;line-height:1.3}
+    .sb-ad-sub{font-size:10px;color:#999;line-height:1.4}
+    .sb-ad-btn{display:block;width:100%;padding:8px;background:var(--acc);border-radius:8px;color:#fff;font-size:12px;font-weight:700;text-decoration:none;text-align:center;transition:all .2s;box-shadow:0 3px 12px rgba(229,57,53,.4)}
+    .sb-ad-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(229,57,53,.55)}
+
+    /* ── LAYOUT ── */
+    .app{display:flex;min-height:calc(100vh - var(--hh))}
+    .main{flex:1;padding:22px;overflow-x:hidden;min-width:0}
+
+    /* ── SECTION HEADER ── */
+    .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .sec-ttl{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:700}
+    .sec-ttl i{color:var(--pr)}
+
+    /* ── DOWNLOAD AD MODAL ── */
+    .dlad-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
+    .dlad-modal.open{display:flex;animation:dladIn .35s ease}
+    @keyframes dladIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+    .dlad-card{background:linear-gradient(160deg,#1a1a1a,#111);border:1px solid rgba(229,57,53,.22);border-radius:20px;padding:28px 28px 24px;max-width:400px;width:92%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;gap:16px}
+    .dlad-top{display:flex;align-items:center;gap:10px;width:100%}
+    .dlad-icon{width:42px;height:42px;background:linear-gradient(135deg,#e53935,#ff7043);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;flex-shrink:0}
+    .dlad-hd{text-align:left}
+    .dlad-hd h3{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px}
+    .dlad-hd p{font-size:11.5px;color:#888}
+    .dlad-pill{font-size:9px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#666;border:1px solid #2a2a2a;border-radius:20px;padding:3px 10px;background:rgba(255,255,255,.03);align-self:flex-start}
+    .dlad-banner{background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;overflow:hidden;width:300px;height:250px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+    .dlad-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,57,53,.04),rgba(255,112,67,.02));pointer-events:none}
+    #dlad-slot{width:300px;height:250px;position:relative;z-index:1}
+    .dlad-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .dlad-ring-svg{width:64px;height:64px;transform:rotate(-90deg)}
+    .dlad-ring-svg circle{fill:none;stroke-width:5;stroke-linecap:round}
+    .drb{stroke:rgba(255,255,255,.07)}
+    .drf{stroke:url(#rg);stroke-dasharray:176;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+    .dlad-num{font-size:22px;font-weight:900;color:#fff;margin-top:-52px;height:52px;display:flex;align-items:center;justify-content:center;position:relative;z-index:2}
+    .dlad-note{font-size:11.5px;color:#777;line-height:1.5}
+    .dlad-note span{color:#e53935;font-weight:700}
+    .dlad-fname{font-size:10.5px;color:#555;background:#161616;border:1px solid #222;border-radius:6px;padding:6px 10px;width:100%;text-align:left;word-break:break-all;font-family:monospace}
+
+    /* ── VIDEO GRID ── */
+    .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px;margin-top:8px}
+    .vc{background:var(--card);border-radius:13px;overflow:hidden;box-shadow:var(--shd);transition:transform .3s,box-shadow .3s;cursor:pointer;position:relative}
+    .vc:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(0,0,0,.15)}
+    .tc{position:relative;width:100%;height:0;padding-bottom:56.25%;overflow:hidden;background:#000}
+    .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s,opacity .3s}
+    .vc:hover .thumb{transform:scale(1.05);opacity:.85}
+    .tov{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .3s}
+    .vc:hover .tov{background:rgba(0,0,0,.3)}
+    .poi{width:52px;height:52px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;opacity:0;transform:scale(.8);transition:all .3s;box-shadow:0 4px 20px rgba(229,57,53,.5)}
+    .vc:hover .poi{opacity:1;transform:scale(1)}
+    .dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.75);color:#fff;padding:3px 7px;border-radius:4px;font-size:11px;font-weight:700;backdrop-filter:blur(4px)}
+    .hdb{position:absolute;top:7px;left:7px;background:var(--acc);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:800}
+    .vi{padding:12px}
+    .vt{font-weight:600;margin-bottom:7px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:42px;font-size:13.5px}
+    .vm{display:flex;justify-content:space-between;align-items:center;color:var(--txt2);font-size:12.5px;margin-bottom:10px;gap:6px}
+    .vm-views{display:flex;align-items:center;gap:4px;color:var(--pr);font-size:12px}
+    .vm-views i{font-size:11px}
+    .vm-views strong{color:var(--text);font-weight:700;font-size:13px}
+    .vm-dur{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--txt2);white-space:nowrap}
+    .vm-dur i{font-size:10px}
+    .va{display:flex;gap:7px}
+    .abt{flex:1;padding:8px 4px;border:none;border-radius:8px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;font-size:12.5px}
+    .pb{background:var(--acc);color:#fff;box-shadow:0 3px 8px rgba(229,57,53,.28)}
+    .pb:hover{transform:translateY(-1px);box-shadow:0 5px 15px rgba(229,57,53,.45)}
+    .db{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+    .dm .db{background:rgba(76,175,80,.15);color:#81c784;border-color:rgba(76,175,80,.3)}
+    .db:hover{background:#2e7d32;color:#fff;border-color:#2e7d32}
+
+    /* ── MODAL ── */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+    .modal.active{display:flex}
+    .mc{background:var(--mdl);width:92%;max-width:1040px;border-radius:16px;overflow:hidden;box-shadow:0 20px 70px rgba(0,0,0,.6);display:flex;flex-direction:column;max-height:93vh;animation:mIn .3s ease}
+    @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .mh{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bdr);background:linear-gradient(135deg,rgba(229,57,53,.06),rgba(255,112,67,.03))}
+    .mttl{font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80%}
+    .cmb{background:rgba(229,57,53,.1);border:none;font-size:17px;color:var(--pr);cursor:pointer;width:33px;height:33px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .cmb:hover{background:var(--pr);color:#fff}
+
+    /* ── VIDEO PLAYER ── */
+    .vpc{position:relative;width:100%;background:#000}
+    .vpw{position:relative;width:100%;padding-bottom:56.25%;background:#000}
+    .vp{position:absolute;inset:0;background:#000;overflow:hidden}
+    .vel{width:100%;height:100%;object-fit:contain;display:block}
+
+    /* ── AD OVERLAY ── */
+    .adov{position:absolute;inset:0;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;z-index:12;flex-direction:column;gap:14px}
+    .adov.show{display:flex;animation:adIn .4s ease}
+    @keyframes adIn{from{opacity:0}to{opacity:1}}
+    .ad-pill{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#888;border:1px solid #2a2a2a;border-radius:20px;padding:3px 10px;background:rgba(255,255,255,.04)}
+    .ad-frame{background:linear-gradient(135deg,#111,#1a0a0a);border:1px solid rgba(229,57,53,.18);border-radius:14px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;min-width:300px;min-height:250px}
+    .ad-frame::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,57,53,.05),rgba(255,112,67,.03));pointer-events:none}
+    #player-ad-slot{width:300px;height:250px;position:relative;z-index:1}
+    .ad-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .ad-ring-svg{width:60px;height:60px;transform:rotate(-90deg)}
+    .ad-ring-svg circle{fill:none;stroke-width:4;stroke-linecap:round}
+    .rbg{stroke:rgba(255,255,255,.08)}
+    .rfg{stroke:url(#rg);stroke-dasharray:163;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+    .ar-num{font-size:20px;font-weight:900;color:#fff;text-align:center;margin-top:-46px;height:46px;display:flex;align-items:center;justify-content:center;position:relative;z-index:2}
+    .ad-skip-note{font-size:11px;color:#666;text-align:center}
+    .ad-skip-note span{color:var(--pr);font-weight:700}
+
+    /* ── PLAYER CONTROLS ── */
+    .pctrl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.88));padding:28px 14px 12px;display:flex;flex-direction:column;gap:7px;opacity:0;transition:opacity .3s;z-index:5}
+    .vp:hover .pctrl,.vp.sc .pctrl{opacity:1}
+    .prog{width:100%;height:5px;background:rgba(255,255,255,.22);border-radius:5px;cursor:pointer;position:relative;transition:height .15s}
+    .prog:hover{height:8px}
+    .pb-fill{height:100%;width:0;background:var(--acc);border-radius:5px;position:relative;transition:width .1s linear}
+    .pb-fill::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 0 6px rgba(229,57,53,.5);opacity:0;transition:opacity .2s}
+    .prog:hover .pb-fill::after{opacity:1}
+    .tds{color:rgba(255,255,255,.85);font-size:11px;display:flex;justify-content:space-between;margin-top:2px}
+    .cbts{display:flex;align-items:center;justify-content:space-between;gap:6px}
+    .cl,.cr{display:flex;align-items:center;gap:4px}
+    .icb{background:rgba(255,255,255,.1);border:none;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s;flex-shrink:0}
+    .icb:hover{background:rgba(255,255,255,.22);transform:scale(1.1)}
+    .icb.mpp{width:42px;height:42px;font-size:17px;background:var(--acc);box-shadow:0 2px 10px rgba(229,57,53,.4)}
+    .icb.mpp:hover{transform:scale(1.12);box-shadow:0 4px 18px rgba(229,57,53,.6)}
+    .vw{display:flex;align-items:center;gap:5px;max-width:120px}
+    .vi2{color:#fff;font-size:13px;cursor:pointer;flex-shrink:0}
+    .vi2:hover{color:var(--pr)}
+    .vsl{-webkit-appearance:none;width:72px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;outline:none;cursor:pointer}
+    .vsl::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;cursor:pointer}
+    .qsel,.sbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:4px 7px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer}
+
+    /* ── MODAL BODY ── */
+    .mb{padding:16px 20px;overflow-y:auto}
+    .vdet{display:flex;flex-direction:column;gap:13px}
+    .vdet h3{font-size:17px;line-height:1.4;font-weight:700}
+    .vmgd{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+    .mmi{background:var(--srch);padding:11px;border-radius:10px;display:flex;flex-direction:column;gap:3px}
+    .mmico{color:var(--pr);font-size:12px}
+    .mml{font-size:10px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+    .mmv{font-weight:800;color:var(--text);font-size:16px}
+    .macts{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    .mab{flex:1;min-width:120px;padding:11px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .25s;font-size:13.5px}
+    .mpl{background:var(--acc);color:#fff;box-shadow:0 4px 14px rgba(229,57,53,.35)}
+    .mpl:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(229,57,53,.5)}
+    .mdl{background:linear-gradient(135deg,#1e88e5,#1565c0);color:#fff;box-shadow:0 4px 14px rgba(30,136,229,.35)}
+    .mdl:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(30,136,229,.5)}
+    .msh{background:var(--srch);color:var(--text);border:1px solid var(--bdr);flex:0;min-width:unset;padding:11px 14px}
+    .msh:hover{background:var(--bdr)}
+
+    /* ── LOADING ── */
+    .lc{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;gap:14px}
+    .spin{width:42px;height:42px;border:4px solid rgba(229,57,53,.15);border-top:4px solid var(--pr);border-radius:50%;animation:spin .85s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .lc p{color:var(--txt2);font-size:13px}
+    .pload{position:absolute;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:8}
+    .pload .spin{border-color:rgba(255,255,255,.2);border-top-color:#fff}
+
+    /* ── TOAST ── */
+    .tbox{position:fixed;bottom:22px;right:22px;z-index:3000;display:flex;flex-direction:column;gap:9px;max-width:330px}
+    .toast{background:var(--tst);color:var(--tst-t);padding:12px 16px;border-radius:11px;box-shadow:0 6px 20px rgba(0,0,0,.2);display:flex;align-items:flex-start;gap:11px;animation:tIn .3s ease,tOut .4s 2.6s forwards;border-left:3px solid var(--pr)}
+    .toast.info{border-left-color:#1e88e5}
+    .toast.err{border-left-color:#d32f2f}
+    .toast.ok{border-left-color:#2e7d32}
+    @keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes tOut{from{opacity:1}to{opacity:0;pointer-events:none}}
+    .tico{font-size:17px;margin-top:1px}
+    .ttl{font-weight:700;font-size:13.5px;margin-bottom:2px}
+    .tmsg{font-size:12.5px;opacity:.85}
+
+    /* ── AGE GATE ── */
+    #agegate{position:fixed;inset:0;background:linear-gradient(135deg,#0d0d0d,#1a0000);display:flex;align-items:center;justify-content:center;z-index:5000;padding:20px;text-align:center}
+    .agec{background:rgba(255,255,255,.04);border:1px solid rgba(229,57,53,.3);border-radius:20px;padding:46px 36px;max-width:460px;width:100%}
+    .agel{font-size:48px;margin-bottom:18px;background:var(--acc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    #agegate h1{font-size:24px;margin-bottom:14px;color:#fff;font-weight:800}
+    #agegate p{color:#999;font-size:13.5px;line-height:1.75;margin-bottom:28px}
+    .abt2{display:flex;gap:14px;justify-content:center}
+    .ageb{padding:12px 28px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+    .yb{background:var(--acc);color:#fff;box-shadow:0 4px 18px rgba(229,57,53,.4)}
+    .yb:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(229,57,53,.55)}
+    .nb{background:#2a2a2a;color:#888;border:1px solid #3a3a3a}
+    .nb:hover{background:#333;color:#ccc}
+
+    /* ── PAGINATION ── */
+    .pgn{display:flex;justify-content:center;gap:7px;margin:28px 0 8px;flex-wrap:wrap}
+    .pgb{padding:7px 13px;border:1px solid var(--bdr);background:var(--card);color:var(--text);border-radius:7px;cursor:pointer;transition:all .2s;font-weight:500;font-size:13px}
+    .pgb:hover{background:var(--pr);color:#fff;border-color:var(--pr)}
+    .pgb.active{background:var(--acc);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(229,57,53,.35)}
+    .pgb:disabled{opacity:.38;cursor:not-allowed}
+
+    /* ── EMPTY STATE ── */
+    .emp{grid-column:1/-1;text-align:center;padding:54px 36px;background:var(--card);border-radius:14px}
+    .emp i{font-size:50px;color:var(--txt2);margin-bottom:16px;opacity:.5;display:block}
+    .emp h3{margin-bottom:9px;font-size:19px}
+    .emp p{color:var(--txt2);max-width:420px;margin:0 auto;font-size:13.5px}
+
+    /* ── PARTICLES ── */
+    #ptc{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:640px){
+      .logo span{display:none}
+      .sbox-wrap{display:none}
+      .main{padding:14px}
+      .vgrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:13px}
+    }
+    @media(max-width:480px){
+      .vgrid{grid-template-columns:1fr}
+      .macts{flex-direction:column}
+      .mab{width:100%}
+    }
+  </style>
+</head>
+<body>
+<div id="ptc"></div>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e53935"/>
+      <stop offset="100%" style="stop-color:#ff7043"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- Age Gate -->
+<div id="agegate">
+  <div class="agec">
+    <div class="agel"><i class="fas fa-film"></i></div>
+    <h1>Age Verification Required</h1>
+    <p>This website contains adult content. You must be 18 years or older to access this site. By clicking "Yes, I'm 18+" you confirm you are of legal age in your jurisdiction.</p>
+    <div class="abt2">
+      <button class="ageb yb" onclick="passAge()"><i class="fas fa-check"></i> Yes, I'm 18+</button>
+      <button class="ageb nb" onclick="window.location.href='https://www.google.com'">No, Go Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" style="display:none">
+
+  <!-- Header -->
+  <header>
+    <div class="hc">
+      <button class="hic ham" id="hamBtn" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+      <a href="#" class="logo">
+        <i class="fas fa-film"></i><span>XVideo Downloader</span>
+      </a>
+      <div class="sbox-wrap">
+        <div class="sbox">
+          <input type="text" id="srchIn" placeholder="Search videos...">
+          <button id="srchBtn"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+      <div class="hdr-acts">
+        <button class="hic" id="themeBtn" title="Toggle dark mode"><i class="fas fa-moon"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar overlay -->
+  <div class="sov" id="sovEl"></div>
+
+  <!-- App layout -->
+  <div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebarEl">
+      <div class="sb-brand"><i class="fas fa-film"></i><span>XVideo DL</span></div>
+
+      <div class="sb-sec">Main</div>
+      <nav class="snav">
+        <div class="ni active" data-cat="all" data-label="Trending">
+          <span class="nic"><i class="fas fa-fire"></i></span>
+          <span class="nlb">Trending</span>
+          <span class="nbg">HOT</span>
+        </div>
+        <div class="ni" data-cat="new" data-label="New Videos">
+          <span class="nic"><i class="fas fa-bolt"></i></span>
+          <span class="nlb">New Videos</span>
+        </div>
+      </nav>
+      <div class="sb-div"></div>
+
+      <div class="sb-sec">Categories</div>
+      <nav class="snav">
+        <div class="ni" data-cat="Teen" data-label="Teen"><span class="nic"><i class="fas fa-user-graduate"></i></span><span class="nlb">Teen</span></div>
+        <div class="ni" data-cat="India" data-label="India"><span class="nic"><i class="fas fa-flag"></i></span><span class="nlb">India</span></div>
+        <div class="ni" data-cat="Nigeria" data-label="Nigeria"><span class="nic"><i class="fas fa-globe-africa"></i></span><span class="nlb">Nigeria</span></div>
+        <div class="ni" data-cat="Mom" data-label="Mom &amp; Son"><span class="nic"><i class="fas fa-heart"></i></span><span class="nlb">Mom &amp; Son</span></div>
+        <div class="ni" data-cat="MILF" data-label="MILF"><span class="nic"><i class="fas fa-crown"></i></span><span class="nlb">MILF</span></div>
+        <div class="ni" data-cat="Lesbian" data-label="Lesbian"><span class="nic"><i class="fas fa-female"></i></span><span class="nlb">Lesbian</span></div>
+        <div class="ni" data-cat="Blonde" data-label="Blonde"><span class="nic"><i class="fas fa-user"></i></span><span class="nlb">Blonde</span></div>
+        <div class="ni" data-cat="Big Tits" data-label="Big Tits"><span class="nic"><i class="fas fa-star"></i></span><span class="nlb">Big Tits</span></div>
+        <div class="ni" data-cat="Step" data-label="Step Family"><span class="nic"><i class="fas fa-users"></i></span><span class="nlb">Step Family</span></div>
+        <div class="ni" data-cat="Anal" data-label="Anal"><span class="nic"><i class="fas fa-fire-alt"></i></span><span class="nlb">Anal</span></div>
+        <div class="ni" data-cat="Amateur" data-label="Amateur"><span class="nic"><i class="fas fa-video"></i></span><span class="nlb">Amateur</span></div>
+        <div class="ni" data-cat="Asian" data-label="Asian"><span class="nic"><i class="fas fa-globe-asia"></i></span><span class="nlb">Asian</span></div>
+        <div class="ni" data-cat="Ebony" data-label="Ebony"><span class="nic"><i class="fas fa-moon"></i></span><span class="nlb">Ebony</span></div>
+        <div class="ni" data-cat="BBW" data-label="BBW"><span class="nic"><i class="fas fa-spa"></i></span><span class="nlb">BBW</span></div>
+      </nav>
+
+      <div class="sb-div"></div>
+
+      <!-- Smart Link Ad in sidebar -->
+      <div class="sb-ad-box" id="sl-ad-box">
+        <div class="sb-ad-inner">
+          <div class="sb-ad-icon"><i class="fas fa-play-circle"></i></div>
+          <div class="sb-ad-title">Unlock Premium Videos</div>
+          <div class="sb-ad-sub">Watch exclusive HD content from top creators</div>
+          <a href="#" id="sl-link" class="sb-ad-btn" target="_blank" rel="noopener">Watch Now &rarr;</a>
+        </div>
+      </div>
+
+      <div class="sb-foot">
+        <p><i class="fas fa-shield-alt" style="color:var(--pr)"></i> Secure downloads via encrypted API. 18+ only.</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="sec-hdr">
+        <div class="sec-ttl">
+          <i class="fas fa-fire"></i>
+          <span id="secLabel">Trending Videos</span>
+        </div>
+      </div>
+
+      <!-- Native Banner Ad Strip -->
+      <div class="native-ad-strip">
+        <span class="native-ad-label">Sponsored</span>
+        <div class="native-ad-content">
+          <div id="native-banner-slot"></div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="lc" id="lcEl">
+        <div class="spin"></div>
+        <p>Loading videos...</p>
+      </div>
+
+      <!-- Grid -->
+      <div class="vgrid" id="vgrid"></div>
+
+      <!-- Pagination -->
+      <div class="pgn" id="pgnEl">
+        <button class="pgb" id="prevPg" disabled><i class="fas fa-chevron-left"></i></button>
+        <button class="pgb active" data-p="1">1</button>
+        <button class="pgb" data-p="2">2</button>
+        <button class="pgb" data-p="3">3</button>
+        <button class="pgb" id="nextPg"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Video Modal -->
+  <div class="modal" id="vmodal">
+    <div class="mc">
+      <div class="mh">
+        <h2 class="mttl" id="mttl">Video</h2>
+        <button class="cmb" id="closeMod"><i class="fas fa-times"></i></button>
+      </div>
+
+      <!-- Player -->
+      <div class="vpc">
+        <div class="vpw">
+          <div class="vp" id="vpEl">
+            <video class="vel" id="vEl" playsinline></video>
+
+            <!-- ══ AD OVERLAY — Banner 300×250 ══ -->
+            <div class="adov" id="adov">
+              <span class="ad-pill">Advertisement</span>
+              <div class="ad-frame">
+                <div id="player-ad-slot"></div>
+              </div>
+              <div class="ad-ring-wrap">
+                <svg class="ad-ring-svg" viewBox="0 0 60 60">
+                  <circle class="rbg" cx="30" cy="30" r="26"/>
+                  <circle class="rfg" id="rfg" cx="30" cy="30" r="26"/>
+                </svg>
+                <div class="ar-num" id="arNum">5</div>
+              </div>
+              <div class="ad-skip-note">Video starts in <span id="adSec">5</span>s</div>
+            </div>
+
+            <!-- Buffer spinner -->
+            <div class="pload" id="pload" style="display:none"><div class="spin"></div></div>
+
+            <!-- Controls -->
+            <div class="pctrl" id="pctrl">
+              <div class="prog" id="prog"><div class="pb-fill" id="pbf"></div></div>
+              <div class="tds">
+                <span id="curT">0:00</span><span id="totT">0:00</span>
+              </div>
+              <div class="cbts">
+                <div class="cl">
+                  <button class="icb mpp" id="ppBtn"><i class="fas fa-play"></i></button>
+                  <button class="icb" id="rwBtn" title="-10s"><i class="fas fa-backward"></i></button>
+                  <button class="icb" id="ffBtn" title="+10s"><i class="fas fa-forward"></i></button>
+                  <div class="vw">
+                    <i class="fas fa-volume-up vi2" id="vico"></i>
+                    <input type="range" class="vsl" id="vsl" min="0" max="1" step="0.01" value="1">
+                  </div>
+                </div>
+                <div class="cr">
+                  <button class="sbtn" id="spdB">1×</button>
+                  <select class="qsel" id="qsel">
+                    <option value="auto">Auto</option>
+                    <option value="720" selected>720p</option>
+                    <option value="480">480p</option>
+                    <option value="360">360p</option>
+                  </select>
+                  <button class="icb" id="fsBtn"><i class="fas fa-expand"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="mb">
+        <div class="vdet">
+          <h3 id="mVTitle"></h3>
+          <div class="vmgd">
+            <div class="mmi"><span class="mmico"><i class="fas fa-eye"></i></span><span class="mml">Views</span><span class="mmv" id="mViews">—</span></div>
+            <div class="mmi"><span class="mmico"><i class="fas fa-clock"></i></span><span class="mml">Duration</span><span class="mmv" id="mDur">—</span></div>
+            <div class="mmi"><span class="mmico"><i class="fas fa-hdd"></i></span><span class="mml">Size</span><span class="mmv" id="mSz">—</span></div>
+            <div class="mmi"><span class="mmico"><i class="fas fa-thumbs-up"></i></span><span class="mml">Likes</span><span class="mmv" id="mLk">—</span></div>
+          </div>
+        </div>
+        <div class="macts">
+          <button class="mab mpl" id="mPlayBtn"><i class="fas fa-play"></i> Play Video</button>
+          <button class="mab mdl" id="mDlBtn"><i class="fas fa-download"></i> Download</button>
+          <button class="mab msh" id="mShBtn"><i class="fas fa-share-alt"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="tbox" id="tbox"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+/* ┌─────────────────────────────────────────────────────────────┐
+   │  OBFUSCATED AD REGISTRY — DO NOT EDIT UNLESS UPDATING ADS  │
+   └─────────────────────────────────────────────────────────────┘ */
+(function(){
+  /* [1] Popunder — fires once per session on age pass */
+  var _a="https://pl29116",_b="032.profitabl",_c="ecpmratenet",_d="work.com/62/0f/cf/620f",_e="cfcac1c940a48019fb306dc6fb2e.js";
+  window.__pu = _a+_b+_c+_d+_e;
+
+  /* [2] Social Bar — fires on age pass */
+  var _f="https://pl29116",_g="035.profitabl",_h="ecpmratenet",_i="work.com/cf/2f/1c/cf2f1c3a10291b12ac35a1bf",_j="90c3d25f.js";
+  window.__sb = _f+_g+_h+_i+_j;
+
+  /* [3] Native Banner — injected into #native-banner-slot */
+  var _k="https://pl29116",_l="033.profitabl",_m="ecpmratenet",_n="work.com/32d74c1b3adba74a5561112af7f214c6/invoke.js",_o="32d74c1b3adba74a5561112af7f214c6";
+  window.__nb = {src:_k+_l+_m+_n, cid:"container-"+_o};
+
+  /* [4] Banner 300×250 — injected into #player-ad-slot inside video overlay */
+  var _p="dfc720e31a69b09b74185ba415942388";
+  var _q="https://www.highperformanc",_r="eformat.com/"+_p+"/invoke.js";
+  window.__bn = {key:_p, src:_q+_r};
+
+  /* [5] Smart Link — href for sidebar CTA */
+  var _s="https://www.profitabl",_t="ecpmratenet",_u="work.com/cgg60yuk1m?key=e05267df959c45016faa2fe237ffc5e1";
+  window.__sl = _s+_t+_u;
+})();
+
+/* ─── APIS ─── */
+const SAPI = "https://api.princetechn.com/api/search/xvideossearch?apikey=prince&query=";
+const DAPI = "https://api.princetechn.com/api/download/xvideosdl?apikey=prince&url=";
+
+/* ─── STATE ─── */
+let theme='light', curPage=1, curCat='all', allVids=[], adIv=null, adOn=false, curDl='', curTitle='', curQuality='', spdIdx=2;
+const SPDS=[0.5,0.75,1,1.25,1.5,2], PER=18, ADT=5, CIRC=2*Math.PI*26;
+
+/* ─── DOM ─── */
+const $=id=>document.getElementById(id);
+const agegate=$('agegate'),appEl=$('app'),themeBtn=$('themeBtn'),vgrid=$('vgrid'),lcEl=$('lcEl'),
+  vmodal=$('vmodal'),closeMod=$('closeMod'),vEl=$('vEl'),vpEl=$('vpEl'),
+  mttl=$('mttl'),mVTitle=$('mVTitle'),mViews=$('mViews'),mDur=$('mDur'),mSz=$('mSz'),mLk=$('mLk'),
+  mDlBtn=$('mDlBtn'),mPlayBtn=$('mPlayBtn'),mShBtn=$('mShBtn'),tbox=$('tbox'),
+  srchIn=$('srchIn'),srchBtn=$('srchBtn'),prevPg=$('prevPg'),nextPg=$('nextPg'),
+  ppBtn=$('ppBtn'),rwBtn=$('rwBtn'),ffBtn=$('ffBtn'),vsl=$('vsl'),vico=$('vico'),fsBtn=$('fsBtn'),
+  pbf=$('pbf'),prog=$('prog'),curT=$('curT'),totT=$('totT'),adov=$('adov'),arNum=$('arNum'),
+  adSec=$('adSec'),rfg=$('rfg'),spdB=$('spdB'),pload=$('pload'),
+  secLabel=$('secLabel'),sidebarEl=$('sidebarEl'),hamBtn=$('hamBtn'),sovEl=$('sovEl');
+
+/* ─── AGE PASS ─── */
+function passAge(){
+  agegate.style.display='none';
+  appEl.style.display='block';
+  // Set Smart Link
+  const slEl=$('sl-link');
+  if(slEl) slEl.href=window.__sl;
+  // Inject Popunder
+  injectScript(window.__pu,'head');
+  // Inject Social Bar (slight delay)
+  setTimeout(()=>injectScript(window.__sb,'body'),800);
+  // Inject Native Banner
+  setTimeout(injectNativeBanner,400);
+  initPtc();
+  loadVids();
+}
+
+function injectScript(src,target){
+  const s=document.createElement('script');
+  s.src=src; s.async=true;
+  (target==='head'?document.head:document.body).appendChild(s);
+}
+
+function injectNativeBanner(){
+  const slot=$('native-banner-slot');
+  if(!slot) return;
+  // Container div
+  const d=document.createElement('div');
+  d.id=window.__nb.cid;
+  slot.appendChild(d);
+  // Script
+  const s=document.createElement('script');
+  s.src=window.__nb.src;
+  s.async=true;
+  s.setAttribute('data-cfasync','false');
+  slot.appendChild(s);
+}
+
+function injectPlayerBanner(){
+  const slot=$('player-ad-slot');
+  if(!slot) return;
+  slot.innerHTML='';
+  // Set atOptions before script loads
+  window.atOptions={key:window.__bn.key,format:'iframe',height:250,width:300,params:{}};
+  // Inline script to set atOptions (for iframes)
+  const cfg=document.createElement('script');
+  cfg.textContent="atOptions={key:'"+window.__bn.key+"',format:'iframe',height:250,width:300,params:{}}";
+  slot.appendChild(cfg);
+  // Banner invoke script
+  const s=document.createElement('script');
+  s.src=window.__bn.src;
+  s.async=true;
+  slot.appendChild(s);
+}
+
+/* ─── SIDEBAR ─── */
+function openSB(){ sidebarEl.classList.add('open'); sovEl.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeSB(){ sidebarEl.classList.remove('open'); sovEl.classList.remove('open'); document.body.style.overflow=''; }
+hamBtn.addEventListener('click', ()=>{ sidebarEl.classList.contains('open') ? closeSB() : openSB(); });
+sovEl.addEventListener('click', closeSB);
+document.querySelectorAll('.ni[data-cat]').forEach(n=>{
+  n.addEventListener('click',()=>{
+    if(window.innerWidth<=900) closeSB();
+    document.querySelectorAll('.ni').forEach(i=>i.classList.remove('active'));
+    n.classList.add('active');
+    curCat=n.getAttribute('data-cat');
+    const lbl=n.getAttribute('data-label')||n.querySelector('.nlb').textContent;
+    secLabel.textContent=lbl+' Videos';
+    loadVids(curCat,1);
+  });
+});
+
+/* ─── THEME ─── */
+function toggleTheme(){
+  theme=theme==='light'?'dark':'light';
+  document.body.classList.toggle('dm',theme==='dark');
+  themeBtn.querySelector('i').className=theme==='dark'?'fas fa-sun':'fas fa-moon';
+  localStorage.setItem('xvdl-theme',theme);
+  showToast('Theme','Switched to '+theme+' mode','info');
+}
+
+/* ─── TOAST ─── */
+function showToast(title,msg,type='ok'){
+  const t=document.createElement('div');
+  t.className='toast '+(type==='ok'?'ok':type==='info'?'info':'err');
+  const ic={ok:'fa-check-circle',info:'fa-info-circle',err:'fa-exclamation-circle'};
+  const cc={ok:'#2e7d32',info:'#1e88e5',err:'#d32f2f'};
+  t.innerHTML=`<div class="tico" style="color:${cc[type]||'#e53935'}"><i class="fas ${ic[type]||'fa-bell'}"></i></div><div><div class="ttl">${title}</div><div class="tmsg">${msg}</div></div>`;
+  tbox.appendChild(t);
+  setTimeout(()=>t.remove(),3300);
+}
+
+/* ─── UTILS ─── */
+function fv(v,label){if(!v)return'—';const n=parseInt(String(v).replace(/[^0-9]/g,''));const s=n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toLocaleString();return label?s+' views':s;}
+function fl(l){if(!l)return'—';const m=String(l).match(/([\d.]+)([kKmM]?)/);if(m){let n=parseFloat(m[1]);const s=m[2].toLowerCase();if(s==='k')n*=1e3;else if(s==='m')n*=1e6;return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':Math.floor(n).toString()}return l}
+function ft(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc}
+
+/* ─── LOAD VIDEOS ─── */
+async function loadVids(cat=curCat,page=1){
+  try{
+    lcEl.style.display='flex'; vgrid.innerHTML='';
+    curPage=page;
+    const q=cat==='all'?'trending':cat==='new'?'new':cat==='Mom'?'Mom and Son':cat;
+    // Pass page param so the API returns different results per page
+    const res=await fetch(SAPI+encodeURIComponent(q)+'&page='+page);
+    const data=await res.json();
+    if(data.success&&data.results?.length){allVids=data.results;renderVids();updPgn(page);}
+    else showEmp();
+  }catch(e){console.error(e);showEmp('Failed to load. Please try again.');showToast('Error','Failed to load videos','err');}
+  finally{lcEl.style.display='none';}
+}
+
+function renderVids(){
+  // Render all results returned by the API for this page — no client-side slicing
+  if(!allVids.length){showEmp();return;}
+  allVids.forEach(v=>{
+    const c=document.createElement('div');c.className='vc';
+    c.innerHTML=`<div class="tc"><img src="${v.thumb}" class="thumb" loading="lazy" alt="${v.title}"><div class="tov"><div class="poi"><i class="fas fa-play"></i></div></div><span class="hdb">HD</span><span class="dur">${v.duration||'—'}</span></div><div class="vi"><h3 class="vt">${v.title}</h3><div class="vm"><span class="vm-views"><i class="fas fa-eye"></i> <strong>${fv(v.views||'0',true)}</strong></span><span class="vm-dur"><i class="fas fa-clock"></i> ${v.duration||'—'}</span></div><div class="va"><button class="abt pb" data-u="${v.url}"><i class="fas fa-play"></i> Watch</button><button class="abt db" data-u="${v.url}"><i class="fas fa-download"></i></button></div></div>`;
+    vgrid.appendChild(c);
+  });
+  vgrid.querySelectorAll('.pb').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openPlayer(b.dataset.u);}));
+  vgrid.querySelectorAll('.db').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();dlVid(b.dataset.u);}));
+  vgrid.querySelectorAll('.vc').forEach(c=>c.addEventListener('click',()=>{const b=c.querySelector('.pb');if(b)openPlayer(b.dataset.u);}));
+}
+
+function showEmp(msg='No videos found for this category'){
+  vgrid.innerHTML=`<div class="emp"><i class="fas fa-video-slash"></i><h3>No Videos Found</h3><p>${msg}</p></div>`;
+}
+
+function updPgn(page){
+  curPage=page;
+  document.querySelectorAll('.pgb[data-p]').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.p)===page));
+  prevPg.disabled=page===1;
+  nextPg.disabled=false; // API handles page availability; always allow forward navigation
+}
+
+/* ─── OPEN PLAYER ─── */
+async function openPlayer(url){
+  try{
+    vmodal.classList.add('active');
+    pload.style.display='flex';
+    resetPlayer();
+    const res=await fetch(DAPI+encodeURIComponent(url));
+    const data=await res.json();
+    if(data.success&&data.result){
+      const v=data.result;
+      curDl=v.download_url||'';
+      curTitle=v.title||'video';
+      curQuality=extractQuality(curDl,v.quality||v.size||'');
+      mttl.textContent=v.title||'Video';
+      mVTitle.textContent=v.title||'Video';
+      mViews.textContent=fv(v.views,true);
+      mDur.textContent=v.duration||'—';
+      mSz.textContent=v.size||'—';
+      mLk.textContent=fl(v.likes);
+      mDlBtn.onclick=()=>trigDl(curDl,curTitle,curQuality);
+      mPlayBtn.onclick=()=>vEl.play().catch(()=>{});
+      mShBtn.onclick=()=>navigator.clipboard.writeText(v.url||url).then(()=>showToast('Copied','Video link copied','ok')).catch(()=>showToast('Share','Could not copy','err'));
+      vEl.src=curDl;
+      vEl.load();
+      startAd();
+    }else throw new Error('No data');
+  }catch(e){console.error(e);showToast('Error','Failed to load video','err');vmodal.classList.remove('active');}
+  finally{pload.style.display='none';}
+}
+
+/* ─── AD COUNTDOWN + BANNER 300×250 ─── */
+function startAd(){
+  adov.classList.add('show');
+  adOn=true;
+  let sec=ADT;
+  rfg.style.strokeDasharray=CIRC;
+  rfg.style.strokeDashoffset=0;
+  arNum.textContent=sec;
+  adSec.textContent=sec;
+  // Inject banner into player slot
+  injectPlayerBanner();
+  if(adIv) clearInterval(adIv);
+  adIv=setInterval(()=>{
+    sec--;
+    arNum.textContent=sec;
+    adSec.textContent=sec;
+    rfg.style.strokeDashoffset=CIRC-(CIRC*sec/ADT);
+    if(sec<=0){
+      clearInterval(adIv);
+      adov.classList.remove('show');
+      adOn=false;
+      vEl.play().catch(()=>{});
+    }
+  },1000);
+}
+
+/* ─── DOWNLOAD HELPERS ─── */
+function sanitizeName(s){
+  return String(s).replace(/[^\w\s\-]/g,'').replace(/\s+/g,'_').slice(0,80)||'video';
+}
+function extractQuality(url,hint){
+  if(!url) return hint||'HD';
+  const m=url.match(/(\d{3,4})p/i);
+  if(m) return m[1]+'p';
+  if(/hd|high/i.test(url)) return 'HD';
+  if(hint&&/\d+p/i.test(hint)) return hint.match(/\d+p/i)[0];
+  return hint||'HD';
+}
+
+/* ─── DOWNLOAD PROGRESS OVERLAY ─── */
+function showDlProgress(show,pct){
+  let ov=$('dl-progress-ov');
+  if(!show){if(ov)ov.remove();return;}
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='dl-progress-ov';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:6000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)';
+    ov.innerHTML=`<div style="background:#1e1e1e;border:1px solid rgba(229,57,53,.3);border-radius:18px;padding:36px 44px;text-align:center;min-width:300px;max-width:380px">
+      <div style="font-size:36px;margin-bottom:14px">⬇️</div>
+      <div style="font-size:17px;font-weight:700;color:#fff;margin-bottom:6px">Downloading Video</div>
+      <div id="dl-name" style="font-size:12px;color:#aaa;margin-bottom:18px;word-break:break-all"></div>
+      <div style="background:#2a2a2a;border-radius:6px;height:8px;overflow:hidden;margin-bottom:10px">
+        <div id="dl-bar" style="height:100%;background:linear-gradient(135deg,#e53935,#ff7043);border-radius:6px;width:0%;transition:width .3s"></div>
+      </div>
+      <div id="dl-pct" style="font-size:22px;font-weight:900;color:#e53935">0%</div>
+      <div style="font-size:11px;color:#666;margin-top:6px">Please wait — fetching file...</div>
+    </div>`;
+    document.body.appendChild(ov);
+  }
+  if(pct!==undefined){
+    const bar=$('dl-bar'),pctEl=$('dl-pct');
+    if(bar) bar.style.width=Math.min(100,pct)+'%';
+    if(pctEl) pctEl.textContent=Math.min(100,Math.round(pct))+'%';
+  }
+}
+
+/* ─── CORE DOWNLOAD — blob fetch forces real file download ─── */
+async function trigDl(url,name,quality){
+  if(!url){showToast('Error','No download URL available','err');return;}
+  const fname=sanitizeName(name)+(quality?'_'+quality:'')+'.mp4';
+  const nameEl=$('dl-name');
+  showDlProgress(true,0);
+  if(nameEl) nameEl.textContent=fname;
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const total=parseInt(res.headers.get('Content-Length')||'0');
+    const reader=res.body.getReader();
+    const chunks=[];
+    let loaded=0;
+    while(true){
+      const {done,value}=await reader.read();
+      if(done) break;
+      chunks.push(value);
+      loaded+=value.length;
+      const pct=total>0?(loaded/total)*100:null;
+      showDlProgress(true,pct!==null?pct:Math.min(90,loaded/1e6));
+    }
+    showDlProgress(true,100);
+    const blob=new Blob(chunks,{type:'video/mp4'});
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download=fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),30000);
+    showToast('Done','File saved as '+fname,'ok');
+  }catch(e){
+    console.warn('Blob fetch failed:',e);
+    // Fallback: open directly in new tab so browser handles it
+    showToast('Download','Opening file — use browser Save As to download','info');
+    window.open(url,'_blank');
+  }finally{
+    setTimeout(()=>showDlProgress(false),800);
+  }
+}
+
+async function dlVid(url){
+  showToast('Preparing','Fetching download link...','info');
+  try{
+    const r=await fetch(DAPI+encodeURIComponent(url));
+    const d=await r.json();
+    if(d.success&&d.result?.download_url){
+      const title=d.result.title||'video';
+      const quality=extractQuality(d.result.download_url,d.result.quality||d.result.size||'');
+      trigDl(d.result.download_url,title,quality);
+    }else showToast('Error','Could not get download link','err');
+  }catch{showToast('Error','Download failed — please try again','err');}
+}
+
+/* ─── PLAYER CONTROLS ─── */
+function setupCtrl(){
+  ppBtn.addEventListener('click',()=>{if(adOn)return;vEl.paused?vEl.play():vEl.pause();});
+  rwBtn.addEventListener('click',()=>{if(adOn)return;vEl.currentTime=Math.max(0,vEl.currentTime-10);brief('-10s');});
+  ffBtn.addEventListener('click',()=>{if(adOn)return;vEl.currentTime=Math.min(vEl.duration,vEl.currentTime+10);brief('+10s');});
+  vsl.addEventListener('input',()=>{vEl.volume=vsl.value;updVol();});
+  vico.addEventListener('click',()=>{
+    if(vEl.muted||vEl.volume===0){vEl.muted=false;vEl.volume=1;vsl.value=1;}
+    else{vEl.muted=true;vsl.value=0;}
+    updVol();
+  });
+  prog.addEventListener('click',e=>{if(adOn)return;vEl.currentTime=(e.offsetX/prog.clientWidth)*vEl.duration;});
+  fsBtn.addEventListener('click',()=>{
+    if(document.fullscreenElement){document.exitFullscreen();fsBtn.innerHTML='<i class="fas fa-expand"></i>';}
+    else{(vpEl.requestFullscreen||vpEl.webkitRequestFullscreen).call(vpEl);fsBtn.innerHTML='<i class="fas fa-compress"></i>';}
+  });
+  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)fsBtn.innerHTML='<i class="fas fa-expand"></i>';});
+  spdB.addEventListener('click',()=>{spdIdx=(spdIdx+1)%SPDS.length;vEl.playbackRate=SPDS[spdIdx];spdB.textContent=SPDS[spdIdx]+'×';});
+  vEl.addEventListener('play',()=>{ppBtn.innerHTML='<i class="fas fa-pause"></i>';vpEl.classList.remove('sc');});
+  vEl.addEventListener('pause',()=>{ppBtn.innerHTML='<i class="fas fa-play"></i>';vpEl.classList.add('sc');});
+  vEl.addEventListener('timeupdate',()=>{
+    if(adOn||!vEl.duration)return;
+    pbf.style.width=(vEl.currentTime/vEl.duration*100)+'%';
+    curT.textContent=ft(vEl.currentTime);totT.textContent=ft(vEl.duration);
+  });
+  vEl.addEventListener('loadedmetadata',()=>{totT.textContent=ft(vEl.duration);});
+  vEl.addEventListener('waiting',()=>{pload.style.display='flex';});
+  vEl.addEventListener('canplay',()=>{pload.style.display='none';});
+  vEl.addEventListener('ended',()=>{ppBtn.innerHTML='<i class="fas fa-redo"></i>';vpEl.classList.add('sc');});
+  vEl.addEventListener('click',()=>{if(!adOn)vEl.paused?vEl.play():vEl.pause();});
+  document.addEventListener('keydown',e=>{
+    if(!vmodal.classList.contains('active'))return;
+    if(e.key===' '||e.key==='k'){e.preventDefault();vEl.paused?vEl.play():vEl.pause();}
+    if(e.key==='ArrowLeft')vEl.currentTime=Math.max(0,vEl.currentTime-10);
+    if(e.key==='ArrowRight')vEl.currentTime=Math.min(vEl.duration,vEl.currentTime+10);
+    if(e.key==='ArrowUp'){vEl.volume=Math.min(1,vEl.volume+.1);vsl.value=vEl.volume;updVol();}
+    if(e.key==='ArrowDown'){vEl.volume=Math.max(0,vEl.volume-.1);vsl.value=vEl.volume;updVol();}
+    if(e.key==='f'||e.key==='F')fsBtn.click();
+    if(e.key==='Escape')closeMod.click();
+  });
+}
+function brief(t){
+  const d=document.createElement('div');d.textContent=t;
+  d.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.7);color:#fff;padding:9px 18px;border-radius:8px;font-size:17px;font-weight:800;pointer-events:none;z-index:20';
+  vpEl.appendChild(d);setTimeout(()=>d.remove(),600);
+}
+function updVol(){
+  const v=vEl.volume,m=vEl.muted;
+  vico.className='fas vi2 '+(m||v===0?'fa-volume-mute':v<.5?'fa-volume-down':'fa-volume-up');
+}
+function resetPlayer(){
+  vEl.src='';vEl.currentTime=0;
+  pbf.style.width='0%';curT.textContent='0:00';totT.textContent='0:00';
+  ppBtn.innerHTML='<i class="fas fa-play"></i>';
+  if(adIv)clearInterval(adIv);
+  adov.classList.remove('show');adOn=false;pload.style.display='none';
+  spdIdx=2;spdB.textContent='1×';vEl.playbackRate=1;
+  const ps=$('player-ad-slot');if(ps)ps.innerHTML='';
+}
+
+/* ─── PARTICLES ─── */
+function initPtc(){
+  if(typeof particlesJS==='undefined')return;
+  particlesJS('ptc',{particles:{number:{value:38,density:{enable:true,value_area:850}},color:{value:theme==='dark'?'#ff5252':'#e53935'},opacity:{value:.32,random:true},size:{value:3,random:true},line_linked:{enable:true,distance:120,color:theme==='dark'?'#ff5252':'#e53935',opacity:.2,width:1},move:{enable:true,speed:1.5,out_mode:'out'}},interactivity:{detect_on:'canvas',events:{onhover:{enable:true,mode:'grab'},onclick:{enable:true,mode:'push'},resize:true},modes:{grab:{distance:120,line_linked:{opacity:.6}},push:{particles_nb:2}}},retina_detect:true});
+}
+
+/* ─── SEARCH ─── */
+srchBtn.addEventListener('click',()=>{
+  const q=srchIn.value.trim();if(!q)return;
+  document.querySelectorAll('.ni').forEach(i=>i.classList.remove('active'));
+  document.querySelector('.ni[data-cat="all"]')?.classList.add('active');
+  curCat=q;secLabel.textContent=`Results for "${q}"`;
+  allVids=[];loadVids(q,1);showToast('Search','Searching for "'+q+'"','info');
+});
+srchIn.addEventListener('keypress',e=>{if(e.key==='Enter')srchBtn.click();});
+
+/* ─── PAGINATION ─── */
+prevPg.addEventListener('click',()=>{if(curPage>1)loadVids(curCat,curPage-1);});
+nextPg.addEventListener('click',()=>{const t=Math.ceil(allVids.length/PER);if(curPage<t)loadVids(curCat,curPage+1);});
+document.querySelectorAll('.pgb[data-p]').forEach(b=>b.addEventListener('click',()=>loadVids(curCat,parseInt(b.dataset.p))));
+
+/* ─── MODAL CLOSE ─── */
+closeMod.addEventListener('click',()=>{vmodal.classList.remove('active');resetPlayer();});
+vmodal.addEventListener('click',e=>{if(e.target===vmodal){vmodal.classList.remove('active');resetPlayer();}});
+
+/* ─── THEME TOGGLE ─── */
+themeBtn.addEventListener('click',toggleTheme);
+
+/* ─── INIT ─── */
+document.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem('xvdl-theme')||'light';
+  if(saved==='dark'){document.body.classList.add('dm');theme='dark';themeBtn.querySelector('i').className='fas fa-sun';}
+  setupCtrl();
+});
+</script>
 </body>
 </html>
+
