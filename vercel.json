@@ -1,1 +1,14 @@
-{\n  "version": 2,\n  "builds": [\n    {\n      "src": "landing/index.html",\n      "use": "@vercel/static"\n    },\n    {\n      "src": "home/index.html",\n      "use": "@vercel/static"\n    },\n    {\n      "src": "contact.html",\n      "use": "@vercel/static"\n    },\n    {\n      "src": "privacy.html",\n      "use": "@vercel/static"\n    },\n    {\n      "src": "terms.html",\n      "use": "@vercel/static"\n    }\n  ],\n  "routes": [\n    {\n      "src": "^/$",\n      "dest": "/landing/index.html"\n    },\n    {\n      "src": "^/landing$",\n      "dest": "/landing/index.html"\n    },\n    {\n      "src": "^/landing/$",\n      "dest": "/landing/index.html"\n    },\n    {\n      "src": "^/home$",\n      "dest": "/home/index.html"\n    },\n    {\n      "src": "^/home/$",\n      "dest": "/home/index.html"\n    },\n    {\n      "src": "^/contact$",\n      "dest": "/contact.html"\n    },\n    {\n      "src": "^/contact/$",\n      "dest": "/contact.html"\n    },\n    {\n      "src": "^/privacy$",\n      "dest": "/privacy.html"\n    },\n    {\n      "src": "^/privacy/$",\n      "dest": "/privacy.html"\n    },\n    {\n      "src": "^/terms$",\n      "dest": "/terms.html"\n    },\n    {\n      "src": "^/terms/$",\n      "dest": "/terms.html"\n    },\n    {\n      "src": "^/(.*)$",\n      "dest": "/landing/index.html"\n    }\n  ],\n  "env": {},\n  "framework": null\n}
+{
+  "routes": [
+    { "src": "^/$", "dest": "/landing/index.html" },
+
+    { "src": "^/landing/?$", "dest": "/landing/index.html" },
+    { "src": "^/home/?$", "dest": "/home/index.html" },
+
+    { "src": "^/contact/?$", "dest": "/contact.html" },
+    { "src": "^/privacy/?$", "dest": "/privacy.html" },
+    { "src": "^/terms/?$", "dest": "/terms.html" },
+
+    { "src": "^/(.*)$", "dest": "/landing/index.html" }
+  ]
+}
