@@ -24,6 +24,10 @@
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       line-height: 1.6;
@@ -62,6 +66,9 @@
       cursor: pointer;
       font-size: 16px;
       box-shadow: 0 4px 10px rgba(229, 57, 53, 0.3);
+      position: relative;
+      z-index: 3;
+      pointer-events: auto;
     }
 
     .btn:hover {
@@ -205,6 +212,8 @@
     .hero-content {
       max-width: 650px;
       z-index: 2;
+      position: relative;
+      pointer-events: auto;
     }
 
     .hero h1 {
@@ -224,6 +233,8 @@
       display: flex;
       gap: 15px;
       margin-top: 30px;
+      position: relative;
+      z-index: 3;
     }
 
     .hero-image {
@@ -237,6 +248,7 @@
       overflow: hidden;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
       animation: float 6s ease-in-out infinite;
+      pointer-events: none;
     }
 
     @keyframes float {
@@ -526,6 +538,7 @@
       top: 0;
       left: 0;
       z-index: 0;
+      pointer-events: none;
     }
 
     /* Responsive Design */
@@ -557,6 +570,7 @@
       
       .hero-buttons {
         justify-content: center;
+        flex-wrap: wrap;
       }
       
       .hero-image {
